@@ -1,5 +1,5 @@
 # shooter
-
+```
 /src
 │
 ├── Canvas.js        // canvasを管理するコンポーネント
