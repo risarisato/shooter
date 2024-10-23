@@ -75,67 +75,66 @@ window.addEventListener('load', function () {
     class Projectile {
         constructor(game, x, y, speed, directionY = 0) {
             this.game = game;
-            this.x = x; // レーザーのx位置
-            this.y = y; // レーザーのy位置
-            this.speed = speed; // レーザーの速度
-            this.directionY = directionY; // レーザーの斜め移動方向の速度
-            this.width = 10; // レーザーの幅
-            this.height = 10; // レーザーの高さ
+            this.x = x;
+            this.y = y;
+            this.speed = speed;
+            this.directionY = directionY;
+            this.width = 10;
+            this.height = 10;
             this.markedForDeletion = false; // レーザーを削除フラグ
         }
         // レーザーの位置を更新する
         update() {
-            this.x += this.speed; // x方向に進む
-            this.y += this.directionY;  // Y方向の速度も適用して斜めに移動
+            this.x += this.speed;
+            this.y += this.directionY;
             // 画面幅0.95を超えたら削除
             if (this.x > this.game.width * 0.95) this.markedForDeletion = true;
         }
         // レーザーを描画する
         draw(context) {
-            context.fillStyle = 'yellow'; // レーザーの色
-            context.fillRect(this.x, this.y, this.width, this.height); // レーザーの描画
+            context.fillStyle = 'yellow';
+            context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
     // プレイヤーのクラス
     class Player {
         constructor(game) {
             this.game = game;
-            // プレイヤーの大きさと初期値の位置
             this.width = 20;
             this.height = 35;
             this.x = 80;
             this.y = 200;
             this.speedY = 0;
             this.speedX = 0;
-            this.maxSpeed = 7; // プレイヤー速度
-            this.projectiles = []; // レーザーの配列
-            // パワーアップの定義
-            this.powerUp = false; // 最初からパワーアップしない
+            this.maxSpeed = 7;
+            this.projectiles = [];
+            this.powerUp = false;
             this.powerUpTimer = 0;
-            this.powerUpLimit = 5000; // パワーアップの制限時間
+            this.powerUpLimit = 5000;
         }
-        // プレイヤーの位置を更新する
+        /*
+        * プレイヤーの位置を更新する
+        * deltaTimeは前回のフレームからの経過時間
+        * 垂直・水平方向の移動
+        * 画面上下・左右端を超えないようにする
+        */
         update(deltaTime) {
-            // プレイヤーの垂直方向の移動
             if (this.game.keys.includes('ArrowUp')) this.speedY = -this.maxSpeed;
             else if (this.game.keys.includes('w')) this.speedY = -this.maxSpeed;
             else if (this.game.keys.includes('ArrowDown')) this.speedY = this.maxSpeed;
             else if (this.game.keys.includes('s')) this.speedY = this.maxSpeed;
             else this.speedY = 0; // 何も押されていないときは0にしないと動き続けるため
             this.y += this.speedY;
-            // プレイヤーの水平方向の移動
             if (this.game.keys.includes('ArrowLeft')) this.speedX = -this.maxSpeed;
             else if (this.game.keys.includes('a')) this.speedX = -this.maxSpeed;
             else if (this.game.keys.includes('ArrowRight')) this.speedX = this.maxSpeed;
             else if (this.game.keys.includes('d')) this.speedX = this.maxSpeed;
             else this.speedX = 0;
             this.x += this.speedX;
-            // プレイヤーが画面上下端を超えないようにする
             if (this.y > this.game.height - this.height * 0.5)
                 this.y = this.game.height - this.height * 0.5;
             else if (this.y < -this.height * 0.5)
                 this.y = -this.height * 0.5;
-            // プレイヤーが画面左右端を超えないようにする
             if (this.x > this.game.width - this.width * 0.5)
                 this.x = this.game.width - this.width * 0.5;
             else if (this.x < -this.width * 0.5)
@@ -148,14 +147,12 @@ window.addEventListener('load', function () {
             // 削除フラグレーザーは、filter関数で削除する
             this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion);
 
-            // プレイヤーのパワーアップ状態のタイマー管理
+            // パワーアップ状態のタイマーリセット
             if (this.powerUp) {
                 if (this.powerUpTimer > this.powerUpLimit) {
-                    // パワーアップの効果が切れたらリセット
                     this.powerUpTimer = 0;
                     this.powerUp = false;
                 } else {
-                    // パワーアップ中は弾薬が少しずつ回復する
                     this.powerUpTimer += deltaTime;
                     this.game.ammo += 0.1;
                 }
@@ -163,60 +160,52 @@ window.addEventListener('load', function () {
         }
         // プレイヤーを描画
         draw(context) {
-            context.fillStyle = 'blue'; //プレイヤーの色
+            context.fillStyle = 'blue';
             context.fillRect(this.x, this.y, this.width, this.height);
-            // デバック当たり判定の枠線表示
-            if (this.game.debug)
-                context.strokeRect(this.x, this.y, this.width, this.height);
-            // プレイヤーから発射されたレーザーを描画
+            // プレイヤーから発射「projectiles」されたレーザーを描画だけ
             this.projectiles.forEach(projectile => { projectile.draw(context);
             });
         }
         // レーザーで攻撃する関数
         shoot() {
-            if (this.game.ammo > 0) { // 弾薬があるとき
-                // プレイヤーの現在位置からレーザーを発射する
+            if (this.game.ammo > 0) {
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, this.speed = 9));
-                this.game.ammo--; // 弾薬を消費する
+                this.game.ammo--;
             }
             if (this.powerUp) this.shootPowerup();
         }
-        // パワーアップして、3方向にレーザーを発射する関数
+        // パワーアップして、3方向「directionY」引数にレーザーを発射する関数
         shootPowerup() {
             if (this.game.ammo > 0) {
-                // 左斜め上：directionYが-3方向へ、9速度で発射
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, -3));
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
             }
         }
         // パワーアップ状態
         enterPowerUp() {
-            this.powerUpTimer = 0; // パワーアップタイマーをリセット
+            this.powerUpTimer = 0; // リセット
             this.powerUp = true;
             if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬を最大
         }
     }
-    // 敵キャラクター(親super)
+    // 敵キャラクター(継承関係のクラス)
     class Enemy {
         constructor(game) {
             this.game = game;
-            this.x = this.game.width; // 敵はX軸方向から来襲
-            this.speedX = Math.random() * -1.5 - 5.5; // 敵の速度はランダム
-            this.markedForDeletion = false; // 敵の削除フラグ
+            this.x = this.game.width;
+            this.speedX = Math.random() * -1.5 - 5.5;
+            this.markedForDeletion = false;
         }
-        // 敵の位置を更新
         update() {
-            this.x += this.speedX - this.game.speed; // x座標を更新
-            if (this.x + this.width < 0) this.markedForDeletion = true; // 画面外に出たら削除
+            this.x += this.speedX - this.game.speed;
+            if (this.x + this.width < 0) this.markedForDeletion = true;
         }
-        // 敵を描画
         draw(context) {
-            context.fillStyle = 'red'; // 敵の色
-            context.fillRect(this.x, this.y, this.width, this.height) // 敵の描画
-            // HP表示
+            context.fillStyle = 'red';
+            context.fillRect(this.x, this.y, this.width, this.height)
             if (this.game.debug) {
                 context.font = '20px Helvatica';
-                context.fillText(this.lives, this.x, this.y);
+                context.fillText(this.lives, this.x, this.y);// HP表示
             }
         }
     }
@@ -224,14 +213,13 @@ window.addEventListener('load', function () {
     class Sub1 extends Enemy {
         constructor(game) {
             super(game); // 親クラス（Enemy）のコンストラクタを呼び出す
-            this.width = 70; // Sub1の幅
-            this.height = 170; // Sub1の高さ
-            this.y = Math.random() * (this.game.height * 0.95 - this.height); // y座標をランダム
-            this.lives = 10; // 敵のHP
-            this.score = this.lives; // スコア点数
+            this.width = 70;
+            this.height = 170;
+            this.y = Math.random() * (this.game.height * 0.95 - this.height);
+            this.lives = 10;
+            this.score = this.lives;
         }
     }
-    // 継承関係のSub2クラスはEnemyクラスを継承
     class Sub2 extends Enemy {
         constructor(game) {
             super(game);
@@ -242,7 +230,7 @@ window.addEventListener('load', function () {
             this.score = this.lives;
         }
     }
-    // PowerUpingは、敵クラスで出現率と破壊すると不利になる設定
+    // PowerUpingは、敵クラスで出現率と破壊で高得点になる設定
     class PowerUping extends Enemy {
         constructor(game) {
             super(game);
@@ -255,21 +243,19 @@ window.addEventListener('load', function () {
         }
         // パワーアップアイテムの描画
         draw(context) {
-            context.beginPath(); // パスの開始
-            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false); // 円を描画
+            context.beginPath();
+            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
             context.fillStyle = 'yellow';
             context.fill();
-            //this.x += this.speedX - this.game.speed;
-            this.y += Math.sin(this.x * 0.05) * 5;
-            // 黄色の丸の中に「PowerとUp」を描画をハードコーディング
-            context.font = '13px Arial';  // フォント設定
-            context.fillStyle = 'black';  // 文字色を黒に設定
-            context.fillText('Power', this.x - 17 , this.y - 1); // テキストPower
+            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
+            context.font = '13px Arial';
+            context.fillStyle = 'black';
+            context.fillText('Power', this.x - 17 , this.y - 1);
             context.font = '17px Arial';
-            context.fillText('up', this.x - 10 , this.y + 10); // テキストup
+            context.fillText('up', this.x - 10 , this.y + 10);
         }
     }
-    // 継承関係の敵Bossクラス
+    // 敵Bossクラス
     class Boss extends Enemy {
         constructor(game) {
             super(game);
@@ -282,21 +268,21 @@ window.addEventListener('load', function () {
             this.speed = Math.random() * -1.2 - 0.2;
         }
     }
-    // 継承関係で大型タイプ敵を破壊したあとに小型のSubBossをオーバライド
+    // ボスを破壊したあとにSubBossが出現する
     class SubBoss extends Enemy {
         constructor(game, x, y) {
             super(game);
             this.width = 115;
             this.height = 95;
-            this.x = x; // 親ボスの位置に基づいて出現
+            this.x = x;
             this.y = y;
             this.lives = 3;
             this.score = this.lives;
-            this.type = 'SubBoss'; // サブボスキャラクター
+            this.type = 'SubBoss'; // サブボスタイプ
             this.speed = Math.random() * -4.2 - 0.5;
         }
     }
-    // ゲームのUIを描画するクラス：弾薬数とパワーアップタイマーを表示
+    // ゲームのUIを描画するクラス
     class UI {
         constructor(game) {
             this.game = game;
@@ -304,17 +290,15 @@ window.addEventListener('load', function () {
             this.fontFamily = 'serif';
             this.color = 'white';
         }
-        // 弾薬・スコア点数・残り時間などを描画
         draw(context) {
-            context.save(); // スコープ内の現在の描画設定を保存
+            context.save();
             context.fillStyle = this.color;
-            context.shadowOffsetX = 1; // 影をつけている
+            context.shadowOffsetX = 1;
             context.shadowOffsetY = 1;
             context.shadowColor = 'black';
             context.font = this.fontSize + 'px ' + this.fontFamily;
-            context.fillText('点数: ' + this.game.score, 20, 40); // スコア点数表示
-            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2デバック有無', 20, 485); // 操作説明
-
+            context.fillText('点数: ' + this.game.score, 20, 40);
+            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2:HP表示', 20, 485);
 
             // ゲーム終了時のメッセージ
             if (this.game.gameOver) {
@@ -326,22 +310,22 @@ window.addEventListener('load', function () {
                 context.font = '25px ' + this.fontFamily;
                 context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 20);
             }
-            // 弾薬の残量表示
-            if (this.game.player.powerUp) context.fillStyle = 'red';// パワーアップ時の色
+            // 弾薬アイコンを描画
+            if (this.game.player.powerUp) context.fillStyle = 'red';
             for (let i = 0; i < this.game.ammo; i++) {
-                context.fillRect(20 + 5 * i, 50, 3, 20); // 弾薬アイコンを描画
-                context.fillText('弾数: ', 210, 40); // 弾薬数表示
-                context.fillText(Math.floor(this.game.ammo), 270, 40);// 弾薬アイコンを描画
+                context.fillRect(20 + 5 * i, 50, 3, 20);
+                context.fillText('弾数: ', 210, 40);
+                context.fillText(Math.floor(this.game.ammo), 270, 40);
             }
             // パワーアップの残り時間を計算
             const powerUpTimeLeft = Math.max(0, ((this.game.player.powerUpLimit - this.game.player.powerUpTimer) * 0.001).toFixed(1));
             if (this.game.player.powerUp) {
-                context.fillText('パワーアップ残り: ' + powerUpTimeLeft, 20, 100); // パワーアップ残り時間を表示座標
+                context.fillText('パワーアップ残り: ' + powerUpTimeLeft, 20, 100);
             }
-            context.restore();// このif文が終わったら→描画設定を元に戻す
+            context.restore();
         }
     }
-    // ゲームクラス（すべてのmain要素）
+    // mainクラス
     class Main {
         constructor(width, height) {
             this.width = width;
@@ -349,8 +333,8 @@ window.addEventListener('load', function () {
             this.player = new Player(this); // プレイヤーのインスタンス
             this.input = new InputHandler(this); // 入力ハンドラーのインスタンス
             this.ui = new UI(this);//UIの弾薬表示をオブジェクト化
-            this.keys = [];//キーボード操作を配列に格納
-            this.enemies = [];// 敵クラスの配列を宣言
+            this.keys = [];//キーボード操作を配列
+            this.enemies = [];// 敵クラスの配列
             this.enemyTimer = 0;// 敵の初期時間は0
             this.enemyInterval = 550;// 敵の出現頻度
             this.ammo = 20;// 弾薬数初期値
@@ -358,9 +342,9 @@ window.addEventListener('load', function () {
             this.ammoTimer = 0; // 弾薬タイマー
             this.ammoInterval = 350; // 弾薬インターバル
             this.gameOver = false;
-            this.score = 0; // スコア点数の初期値
-            this.speed = 0.1; // 速度
-            this.debug = true; // 最初からデバッグモード
+            this.score = 0;
+            this.speed = 0.1;
+            this.debug = true; // 最初からHP表示
         }
         // 各オブジェクトの状態を更新する関数
         // deltaTimeは前回のフレームからの経過時間
@@ -370,7 +354,6 @@ window.addEventListener('load', function () {
             // 弾薬の数が少ないときは回復する
             if (this.ammoTimer > this.ammoInterval) {
                 if (this.ammo < this.maxAmmo) this.ammo++
-                // そうでなければタイマーは0にする
                 this.ammoTimer = 0;
             } else {
                 this.ammoTimer += deltaTime;
@@ -383,24 +366,21 @@ window.addEventListener('load', function () {
                 if (this.hitCheck(this.player, enemy)) {
                     enemy.markedForDeletion = true;
 
-                    // パワーアップアイテムとの接触判定
+                    // パワーアップタイプとの接触
                     if (enemy.type === 'powers') this.player.enterPowerUp();
-                    else this.gameOver = true;// 通常の敵と接触するとゲームオーバー
+                    else this.gameOver = true;
                 }
 
                 // プレイヤーのレーザーと敵HPの当たり判定
                 this.player.projectiles.forEach(projectile => {
-                    // hitCheckがプレイヤーと敵の四角形の関数
                     if (this.hitCheck(projectile, enemy)) {
                         enemy.lives--;
                         projectile.markedForDeletion = true;
-                        // 敵HPを発射物レーザーで0にしたとき
                         if (enemy.lives <= 0) {
                             enemy.markedForDeletion = true;
-                            // 敵タイプがBossでレーザで倒したら、SubBossが8匹でる
+                            // Boss破壊で、SubBossが8匹出現
                             if (enemy.type === 'boss') {
                                 for (let i = 0; i < 8; i++) {
-                                    // SubBossが座標からズレて出現
                                     this.enemies.push(new SubBoss(this,
                                         enemy.x + Math.random() * enemy.width,
                                         enemy.y + Math.random() * enemy.height + 0.5));
@@ -412,12 +392,9 @@ window.addEventListener('load', function () {
                     }
                 })
             });
-            // 敵を削除する
-            // 削除フラグレーザーは、filter関数で削除する
+            // 敵を削除フラグレーザーは、filter関数で削除する
             this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion);
-            // ゲームオーバーの条件は敵がプレイヤーに当たるとき
             if (this.enemyTimer > this.enemyInterval && !this.gameOver) {
-                // 敵の出現と出現時間を0にする
                 this.addEnemy();
                 this.enemyTimer = 0;
             } else {
@@ -425,26 +402,34 @@ window.addEventListener('load', function () {
                 this.enemyTimer += deltaTime;
             }
         }
-        // すべての要素を描画する関数のレンダリングの描く順番に注意
+        /*
+        * すべての要素を描画するレンダリングの描く順番に注意
+        * 1.弾薬表示→上書きされて見えないから
+        * 2.敵クラス
+        * 3.プレイヤー
+        */
         draw(context) {
-            // 3.プレイヤーの呼び出し
             this.player.draw(context);
-            // 2.敵クラスの呼び出し
             this.enemies.forEach(enemy => {
                 enemy.draw(context);
             });
-            // 1.弾薬表示が最後にした>>上書きされて見えないから
             this.ui.draw(context);
         }
-        // 敵を追加する関数
+        /*
+        * 敵を追加する関数
+        * 30%の確率でSub1を追加
+        * 30%の確率でSub2を追加
+        * 10%の確率でBossを追加
+        * 残りの確率でパワーアップアイテムを追加
+        */
         addEnemy() {
             const randomize = Math.random();
-            if (randomize < 0.3) this.enemies.push(new Sub1(this)); // 30%の確率でSub1を追加
-            else if (randomize < 0.6) this.enemies.push(new Sub2(this)); // 30%の確率でSub2を追加
-            else if (randomize < 0.7) this.enemies.push(new Boss(this)); // 10%の確率でBossを追加
-            else this.enemies.push(new PowerUping(this)); // 残りの確率でパワーアップアイテムを追加
+            if (randomize < 0.3) this.enemies.push(new Sub1(this));
+            else if (randomize < 0.6) this.enemies.push(new Sub2(this));
+            else if (randomize < 0.7) this.enemies.push(new Boss(this));
+            else this.enemies.push(new PowerUping(this));
         }
-        // 当たり判定の関数:当たり判定、長方形(プレイヤー)の枠線の大きさに含まれるか
+        // 当たり判定関数
         hitCheck(recr1, rect2) {
             return (
                 recr1.x < rect2.x + rect2.width &&
@@ -457,7 +442,7 @@ window.addEventListener('load', function () {
 
 // すべてのクラスが実行されるmainになる
 const game = new Main(canvas.width, canvas.height);
-let lastTime = 0; // 前回のフレームのタイムスタンプ
+let lastTime = 0; // 前回の時間を保存する変数
 
 // アニメーションループ
 function animate(timeStamp) {
@@ -466,7 +451,7 @@ function animate(timeStamp) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);// アニメーション(canvas)がクリアされる
     game.draw(ctx); // 描画を実行する
     game.update(deltaTime); // game.update()に引数deltaTimeを入れて、状態の更新になる
-    requestAnimationFrame(animate); // 次のフレームのアニメーションを要求する
+    requestAnimationFrame(animate); // 次のフレームのアニメーションを要求する、canvasの再描画
 }
 animate(0); // アニメーション開始
 });
