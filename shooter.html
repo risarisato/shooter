@@ -212,14 +212,11 @@ window.addEventListener('load', function () {
         // 敵を描画
         draw(context) {
             context.fillStyle = 'red'; // 敵の色
-            context.fillRect(this.x, this.y, this.width * 0.9, this.height * 0.9) // 敵の描画
-
-            // F2キーでデバッグモードで表示
-            if (this.game.debug)
-                context.strokeRect(this.x - 5, this.y - 5, this.width, this.height); // 枠線表示
+            context.fillRect(this.x, this.y, this.width, this.height) // 敵の描画
+            // HP表示
             if (this.game.debug) {
                 context.font = '20px Helvatica';
-                context.fillText(this.lives, this.x, this.y); // HP表示
+                context.fillText(this.lives, this.x, this.y);
             }
         }
     }
@@ -262,6 +259,8 @@ window.addEventListener('load', function () {
             context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false); // 円を描画
             context.fillStyle = 'yellow';
             context.fill();
+            //this.x += this.speedX - this.game.speed;
+            this.y += Math.sin(this.x * 0.05) * 5;
             // 黄色の丸の中に「PowerとUp」を描画をハードコーディング
             context.font = '13px Arial';  // フォント設定
             context.fillStyle = 'black';  // 文字色を黒に設定
@@ -343,7 +342,7 @@ window.addEventListener('load', function () {
         }
     }
     // ゲームクラス（すべてのmain要素）
-    class Game {
+    class Main {
         constructor(width, height) {
             this.width = width;
             this.height = height;
@@ -457,7 +456,7 @@ window.addEventListener('load', function () {
     }
 
 // すべてのクラスが実行されるmainになる
-const game = new Game(canvas.width, canvas.height);
+const game = new Main(canvas.width, canvas.height);
 let lastTime = 0; // 前回のフレームのタイムスタンプ
 
 // アニメーションループ
