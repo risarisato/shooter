@@ -195,13 +195,14 @@ window.addEventListener('load', function () {
             this.x = this.game.width;
             this.speedX = Math.random() * -1.5 - 5.5;
             this.markedForDeletion = false;
+            this.color = '';
         }
         update() {
             this.x += this.speedX - this.game.speed;
             if (this.x + this.width < 0) this.markedForDeletion = true;
         }
         draw(context) {
-            context.fillStyle = 'red';
+            context.fillStyle = this.color;
             context.fillRect(this.x, this.y, this.width, this.height)
             if (this.game.debug) {
                 context.font = '20px Helvatica';
@@ -214,10 +215,11 @@ window.addEventListener('load', function () {
         constructor(game) {
             super(game); // 親クラス（Enemy）のコンストラクタを呼び出す
             this.width = 70;
-            this.height = 170;
+            this.height = 200;
             this.y = Math.random() * (this.game.height * 0.95 - this.height);
             this.lives = 10;
             this.score = this.lives;
+            this.color = "#940202";
         }
     }
     class Sub2 extends Enemy {
@@ -228,31 +230,7 @@ window.addEventListener('load', function () {
             this.y = Math.random() * (this.game.height * 0.95 - this.height);
             this.lives = 4;
             this.score = this.lives;
-        }
-    }
-    // PowerUpingは、敵クラスで出現率と破壊で高得点になる設定
-    class PowerUping extends Enemy {
-        constructor(game) {
-            super(game);
-            this.width = 99 * 0.5;
-            this.height = 95 * 0.5;
-            this.y = Math.random() * (this.game.height * 0.95 - this.height);
-            this.lives = 3;
-            this.score = 50;
-            this.type = 'powers'; // パワーアップ用でタイプを設定
-        }
-        // パワーアップアイテムの描画
-        draw(context) {
-            context.beginPath();
-            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
-            context.fillStyle = 'yellow';
-            context.fill();
-            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
-            context.font = '13px Arial';
-            context.fillStyle = 'black';
-            context.fillText('Power', this.x - 17 , this.y - 1);
-            context.font = '17px Arial';
-            context.fillText('up', this.x - 10 , this.y + 10);
+            this.color = '#EC4444';
         }
     }
     // 敵Bossクラス
@@ -266,6 +244,7 @@ window.addEventListener('load', function () {
             this.score = this.lives;
             this.type = 'boss';
             this.speed = Math.random() * -1.2 - 0.2;
+            this.color = '#FF0000';
         }
     }
     // ボスを破壊したあとにSubBossが出現する
@@ -280,6 +259,33 @@ window.addEventListener('load', function () {
             this.score = this.lives;
             this.type = 'SubBoss'; // サブボスタイプ
             this.speed = Math.random() * -4.2 - 0.5;
+            this.color = '#796262';
+        }
+    }
+    // PowerUpingは、敵クラスで出現率と破壊で高得点になる設定
+    class PowerUping extends Enemy {
+        constructor(game) {
+            super(game);
+            this.width = 49.5;
+            this.height = 47.5;
+            this.y = Math.random() * (this.game.height * 0.95 - this.height);
+            this.lives = 3;
+            this.score = 50;
+            this.type = 'powers'; // パワーアップ用でタイプを設定
+            this.color = 'yellow';
+        }
+        // パワーアップアイテムの描画
+        draw(context) {
+            context.beginPath();
+            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
+            context.fillStyle = this.color;
+            context.fill();
+            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
+            context.font = '13px Arial';
+            context.fillStyle = 'black';
+            context.fillText('Power', this.x - 17 , this.y - 1);
+            context.font = '17px Arial';
+            context.fillText('up', this.x - 10 , this.y + 10);
         }
     }
     // ゲームのUIを描画するクラス
@@ -298,7 +304,7 @@ window.addEventListener('load', function () {
             context.shadowColor = 'black';
             context.font = this.fontSize + 'px ' + this.fontFamily;
             context.fillText('点数: ' + this.game.score, 20, 40);
-            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2:HP表示', 20, 485);
+            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2:HP非表示', 20, 485);
 
             // ゲーム終了時のメッセージ
             if (this.game.gameOver) {
