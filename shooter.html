@@ -333,7 +333,7 @@ window.addEventListener('load', function () {
             this.player = new Player(this);
             this.input = new InputHandler(this);
             this.ui = new UI(this);
-            this.keys = [];
+            this.keys = [];// 入力されたキーを格納する配列
             this.enemies = [];// 敵クラスの配列
             this.enemyTimer = 0;// 敵の初期時間は0
             this.enemyInterval = 550;// 敵の出現頻度
@@ -438,7 +438,7 @@ window.addEventListener('load', function () {
         }
     }
 
-// すべてのクラスが実行されるmainになる
+// Mainクラスをインスタンス化して、アニメーションを開始する
 const game = new Main(canvas.width, canvas.height);
 let lastTime = 0; // 前回の時間を保存する変数
 
