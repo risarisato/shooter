@@ -5,16 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>shooter</title>
-
     <style>
-        /* CSSの初期化（すべての要素をリセット） */
         *{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        /* canvasだけcss */
         #canvas{
             border: 5px solid black;
             position: absolute;
@@ -22,8 +18,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: #4dbc65;
-
-            /* 画像比率canvasの画像比率の縮尺を固定 */
             max-width: 100%;
             max-height: 100%;
         }
@@ -123,7 +117,7 @@ window.addEventListener('load', function () {
             else if (this.game.keys.includes('w')) this.speedY = -this.maxSpeed;
             else if (this.game.keys.includes('ArrowDown')) this.speedY = this.maxSpeed;
             else if (this.game.keys.includes('s')) this.speedY = this.maxSpeed;
-            else this.speedY = 0; // 何も押されていないときは0にしないと動き続けるため
+            else this.speedY = 0; // 何も押されていないときは「0」にしないと動き続けるため
             this.y += this.speedY;
             if (this.game.keys.includes('ArrowLeft')) this.speedX = -this.maxSpeed;
             else if (this.game.keys.includes('a')) this.speedX = -this.maxSpeed;
@@ -210,7 +204,7 @@ window.addEventListener('load', function () {
             }
         }
     }
-    // 継承関係のSub1クラスはEnemyクラスを継承
+    // 継承関係のSub1クラス
     class Sub1 extends Enemy {
         constructor(game) {
             super(game); // 親クラス（Enemy）のコンストラクタを呼び出す
@@ -336,17 +330,17 @@ window.addEventListener('load', function () {
         constructor(width, height) {
             this.width = width;
             this.height = height;
-            this.player = new Player(this); // プレイヤーのインスタンス
-            this.input = new InputHandler(this); // 入力ハンドラーのインスタンス
-            this.ui = new UI(this);//UIの弾薬表示をオブジェクト化
-            this.keys = [];//キーボード操作を配列
+            this.player = new Player(this);
+            this.input = new InputHandler(this);
+            this.ui = new UI(this);
+            this.keys = [];
             this.enemies = [];// 敵クラスの配列
             this.enemyTimer = 0;// 敵の初期時間は0
             this.enemyInterval = 550;// 敵の出現頻度
-            this.ammo = 20;// 弾薬数初期値
-            this.maxAmmo = 50; // 弾薬最大値
+            this.ammo = 20;
+            this.maxAmmo = 50;
             this.ammoTimer = 0; // 弾薬タイマー
-            this.ammoInterval = 350; // 弾薬インターバル
+            this.ammoInterval = 350;
             this.gameOver = false;
             this.score = 0;
             this.speed = 0.1;
@@ -357,22 +351,20 @@ window.addEventListener('load', function () {
         update(deltaTime) {
             this.player.update(deltaTime); // プレイヤーの更新
 
-            // 弾薬の数が少ないときは回復する
+            // 弾薬タイマーと弾薬インターバルを更新
             if (this.ammoTimer > this.ammoInterval) {
                 if (this.ammo < this.maxAmmo) this.ammo++
                 this.ammoTimer = 0;
             } else {
                 this.ammoTimer += deltaTime;
             }
-            // 敵の動きx軸
             this.enemies.forEach(enemy => {
                 enemy.update();
 
                 // プレイヤーと敵の当たり判定
                 if (this.hitCheck(this.player, enemy)) {
                     enemy.markedForDeletion = true;
-
-                    // パワーアップタイプとの接触
+                    // タイプがパワーアップの接触
                     if (enemy.type === 'powers') this.player.enterPowerUp();
                     else this.gameOver = true;
                 }
