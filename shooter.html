@@ -75,7 +75,7 @@ window.addEventListener('load', function () {
             this.directionY = directionY;
             this.width = 10;
             this.height = 10;
-            this.markedForDeletion = false; // レーザーを削除フラグ
+            this.markedForDeletion = false; // 削除フラグ
         }
         // レーザーの位置を更新する
         update() {
@@ -125,6 +125,7 @@ window.addEventListener('load', function () {
             else if (this.game.keys.includes('d')) this.speedX = this.maxSpeed;
             else this.speedX = 0;
             this.x += this.speedX;
+            // 画面端にプレイヤーの50%は見える(画面端にプレイヤーが沈み込まない)
             if (this.y > this.game.height - this.height * 0.5)
                 this.y = this.game.height - this.height * 0.5;
             else if (this.y < -this.height * 0.5)
@@ -179,10 +180,10 @@ window.addEventListener('load', function () {
         enterPowerUp() {
             this.powerUpTimer = 0; // リセット
             this.powerUp = true;
-            if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬を最大
+            if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬最大
         }
     }
-    // 敵キャラクター(継承関係のクラス)
+    // 敵キャラクター(親の継承関係のクラス)
     class Enemy {
         constructor(game) {
             this.game = game;
@@ -204,7 +205,7 @@ window.addEventListener('load', function () {
             }
         }
     }
-    // 継承関係のSub1クラス
+    // 継承関係の子のクラス
     class Sub1 extends Enemy {
         constructor(game) {
             super(game); // 親クラス（Enemy）のコンストラクタを呼び出す
@@ -310,7 +311,7 @@ window.addEventListener('load', function () {
                 context.font = '25px ' + this.fontFamily;
                 context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 20);
             }
-            // 弾薬アイコンを描画
+            // パワーアップ時のフィーバー中の表示
             if (this.game.player.powerUp) context.fillStyle = 'red';
             for (let i = 0; i < this.game.ammo; i++) {
                 context.fillRect(20 + 5 * i, 50, 3, 20);
@@ -322,7 +323,7 @@ window.addEventListener('load', function () {
             if (this.game.player.powerUp) {
                 context.fillText('パワーアップ残り: ' + powerUpTimeLeft, 20, 100);
             }
-            context.restore();
+            context.restore(); //パワーアップが終われば、restore()で白表示になる
         }
     }
     // mainクラス
@@ -378,6 +379,7 @@ window.addEventListener('load', function () {
                             enemy.markedForDeletion = true;
                             // Boss破壊で、SubBossが8匹出現
                             if (enemy.type === 'boss') {
+　　　　　　　　　　　　　　　　// SubBossを同じ座標位置から出現させない
                                 for (let i = 0; i < 8; i++) {
                                     this.enemies.push(new SubBoss(this,
                                         enemy.x + Math.random() * enemy.width,
