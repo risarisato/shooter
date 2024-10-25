@@ -27,12 +27,12 @@
 <canvas id = "canvas"></canvas>
 <script>
 "use strict"
-// 全てのコンテンツが読み込まれたときに実行するDOM
+// 全てのコンテンツが読み込まれたときに実行する関数
 window.addEventListener('load', function () {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    // cssでキャンバスの固定画面サイズに対応
+    // キャンバスの画面サイズを固定する
     canvas.width = 1000;
     canvas.height = 500;
 
@@ -103,6 +103,7 @@ window.addEventListener('load', function () {
             this.maxSpeed = 7;
             this.projectiles = [];
             this.powerUp = false;
+            //this.powerUpsuper = false;
             this.powerUpTimer = 0;
             this.powerUpLimit = 5000;
         }
@@ -176,10 +177,17 @@ window.addEventListener('load', function () {
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
             }
         }
+        //shootPowerUpsuper() {
+        //    if (this.game.ammo > 0) {
+        //        this.projectiles.push(new Projectile(this.game, this.x - 5, this.y, this.speed = 17));
+        //        this.projectiles.push(new Projectile(this.game, this.x - 5, this.y + 30, this.speed = 17));
+        //    }
+        //}
         // パワーアップ状態
         enterPowerUp() {
             this.powerUpTimer = 0; // リセット
             this.powerUp = true;
+            //this.powerUpsuper = true;
             if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬最大
         }
     }
@@ -242,7 +250,7 @@ window.addEventListener('load', function () {
             this.color = '#FF0000';
         }
     }
-    // ボスを破壊したあとにSubBossが出現する
+    // ボスを破壊したあとにSubBossを出現させるクラス
     class SubBoss extends Enemy {
         constructor(game, x, y) {
             super(game);
@@ -257,7 +265,7 @@ window.addEventListener('load', function () {
             this.color = '#796262';
         }
     }
-    // PowerUpingは、敵クラスで出現率と破壊で高得点になる設定
+    // パワーアップアイテムのクラス
     class PowerUping extends Enemy {
         constructor(game) {
             super(game);
@@ -265,7 +273,7 @@ window.addEventListener('load', function () {
             this.height = 47.5;
             this.y = Math.random() * (this.game.height * 0.95 - this.height);
             this.lives = 3;
-            this.score = 50;
+            this.score = 50; // 高得点
             this.type = 'powers'; // パワーアップ用でタイプを設定
             this.color = 'yellow';
         }
@@ -281,6 +289,9 @@ window.addEventListener('load', function () {
             context.fillText('Power', this.x - 17 , this.y - 1);
             context.font = '17px Arial';
             context.fillText('up', this.x - 10 , this.y + 10);
+            context.font = '18px Helvatica';
+            context.fillStyle = "yellow";
+            context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
         }
     }
     // ゲームのUIを描画するクラス
@@ -379,7 +390,7 @@ window.addEventListener('load', function () {
                             enemy.markedForDeletion = true;
                             // Boss破壊で、SubBossが8匹出現
                             if (enemy.type === 'boss') {
-　　　　　　　　　　　　　　　　// SubBossを同じ座標位置から出現させない
+                                // SubBossを同じ座標位置から出現させない
                                 for (let i = 0; i < 8; i++) {
                                     this.enemies.push(new SubBoss(this,
                                         enemy.x + Math.random() * enemy.width,
