@@ -37,6 +37,7 @@ window.addEventListener('load', function () {
     canvas.height = 500;
 
     // プレイヤー入力をキーボードで処理するクラス
+    // =は代入、==は等しい、===は厳密に等しいで比較する
     class InputHandler {
         constructor(game) {
             this.game = game;
@@ -47,16 +48,14 @@ window.addEventListener('load', function () {
                     (e.key === 'ArrowLeft') || (e.key === 'a') ||
                     (e.key === 'ArrowRight') || (e.key === 'd')
                 ) && this.game.keys.indexOf(e.key) === -1) {
-                    // 押されたキーをgame.keysに追加する→重複を避ける
                     this.game.keys.push(e.key);
                 } else if (e.key === ' ') {
                     this.game.player.shoot();
-                    // F2キーでデバッグモードのオン・オフ切り替え
                 } else if (e.key === 'F2') {
                     this.game.debug = !this.game.debug;
                 }
             });
-            // キーを離したときの処理(配列にキーが格納され続ける状態になるため)
+            // キーを離したときに配列から削除する
             window.addEventListener('keyup', e => {
                 if (this.game.keys.indexOf(e.key) > -1) {
                     this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
@@ -67,7 +66,8 @@ window.addEventListener('load', function () {
     // レーザー攻撃を定義するクラス
     class Projectile {
         /**
-         * @param {number} directionY - レーザーのy方向の速度
+         * パワーアップして、3方向にレーザーを発射する
+         * @param {number} directionY - レーザーの斜め方向
          */
         constructor(game, x, y, speed, directionY = 0) {
             this.game = game;
@@ -105,10 +105,10 @@ window.addEventListener('load', function () {
             this.maxSpeed = 7;
             this.projectiles = [];
             this.powerUp = false;
+            this.powerOption = false;
+            this.maxshoot = false;
             this.powerUpTimer = 0;
             this.powerUpLimit = 5000;
-
-            this.powerOption = false;
         }
         /**
          * プレイヤーの位置を更新する
@@ -148,7 +148,7 @@ window.addEventListener('load', function () {
             this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion);
 
             // パワーアップ状態のタイマーリセット
-            if (this.powerUp) {
+            if (this.powerUp || this.powerOption) {
                 if (this.powerUpTimer > this.powerUpLimit) {
                     this.powerUpTimer = 0;
                     this.powerUp = false;
@@ -171,18 +171,41 @@ window.addEventListener('load', function () {
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, this.speed = 9));
                 this.game.ammo--;
             }
-            if (this.powerUp) this.shootPowerup();
-            else if (this.powerOption) this.shootPoweroption();
+            // 選択されたパワーアップに基づいて発射
+            if (this.powerUp) {
+                this.shootPowerup();
+            } else if (this.powerOption) {
+                this.shootPoweroption();
+            } else if (this.maxshoot) {
+                this.maxshoot();
+            }
+        }
+        // 弾薬最大値に達して、どちらかのパワーアップ状態にする
+        enterPowerUp() {
+            this.powerUpTimer = 0;
+            this.switchPowerUp();
+            if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo;
         }
         /**
-         * パワーアップして、3方向「directionY」引数にレーザーを発射する関数
-         * @param {number} directionY - レーザーのy方向の速度
+         *  パワーアップ状態を切り替える
+         * @param {boolean} powerUp - パワーアップ状態
+         * @param {boolean} powerOption - パワーアップ状態
+         * @param {boolean} maxshoot - パワーアップ状態
          */
-        shootPowerup() {
-            if (this.game.ammo > 0) {
-                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, -3));
-                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
+
+        switchPowerUp() {
+            if (!this.powerOption) {
+                this.powerUp = false;
+                this.powerOption = true;
+            } else if (!this.powerUp) {
+                this.powerUp = true;
+                this.powerOption = false;
+            } else if (this.powerUp) {
+                this.powerUp = false;
+                this.maxshoot = true;
             }
+
+
         }
         shootPoweroption() {
             if (this.game.ammo > 0) {
@@ -190,11 +213,21 @@ window.addEventListener('load', function () {
                 this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
             }
         }
-        enterPowerUp() {
-            this.powerUpTimer = 0; // リセット
-            this.powerUp = true;
-            this.powerOption = true;
-            if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬最大
+        shootPowerup() {
+            if (this.game.ammo > 0) {
+                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, -3));
+                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
+            }
+        }
+        shootmaxshoot() {
+            if (this.game.ammo > 0) {
+                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y -30, this.speed = 17));
+                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
+                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, -3));
+                this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
+                shootPoweroption();
+                shootPowerup();
+            }
         }
     }
     // 親の継承関係(敵・ボス・岩・パワーアップ)のクラス
@@ -327,7 +360,35 @@ window.addEventListener('load', function () {
             this.lives = 3;
             this.score = 50; // 高得点
             this.type = 'poweroption';
-            this.color = '#92FFFA';
+            this.color = '#49724F';
+        }
+        // パワーアップアイテムの描画
+        draw(context) {
+            context.beginPath();
+            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
+            context.fillStyle = this.color;
+            context.fill();
+            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
+            context.font = '13px Arial';
+            context.fillStyle = 'black';
+            context.fillText('Power', this.x - 17 , this.y - 1);
+            context.font = '17px Arial';
+            context.fillText('up', this.x - 10 , this.y + 10);
+            context.font = '18px Helvatica';
+            context.fillStyle = "#92FFFA";
+            context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
+        }
+    }
+    class Maxshoot extends ScrollingEntity {
+        constructor(game) {
+            super(game);
+            this.width = 49.5;
+            this.height = 47.5;
+            this.y = Math.random() * (this.game.height * 0.95 - this.height);
+            this.lives = 3;
+            this.score = 50; // 高得点
+            this.type = 'maxshoot';
+            this.color = '#92FFA2';
         }
         // パワーアップアイテムの描画
         draw(context) {
@@ -375,7 +436,7 @@ window.addEventListener('load', function () {
                 context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 20);
             }
             // パワーアップ時のフィーバー中の表示
-            if (this.game.player.powerUp) context.fillStyle = 'red';
+            if (this.game.player.powerUp || this.game.player.powerOption) context.fillStyle = 'red';
             for (let i = 0; i < this.game.ammo; i++) {
                 context.fillRect(20 + 5 * i, 50, 3, 20);
                 context.fillText('弾数: ', 210, 40);
@@ -383,8 +444,14 @@ window.addEventListener('load', function () {
             }
             // パワーアップの残り時間を計算
             const powerUpTimeLeft = Math.max(0, ((this.game.player.powerUpLimit - this.game.player.powerUpTimer) * 0.001).toFixed(1));
-            if (this.game.player.powerUp) {
+            if (this.game.player.powerUp || this.game.player.powerOption) {
                 context.fillText('パワーアップ残り: ' + powerUpTimeLeft, 20, 100);
+                // バグthis.game.player.powerOptionのパワーアップ終わらない
+                if (this.game.player.powerUpTimer > this.game.player.powerUpLimit) {
+                    this.game.player.powerUp = false;
+                    this.game.player.powerOption = false;
+                    this.game.player.powerUpTimer = 0;
+                }
             }
             context.restore(); //パワーアップが終われば、restore()で白表示になる
         }
@@ -403,8 +470,8 @@ window.addEventListener('load', function () {
             this.ui = new UI(this);
             this.keys = [];// 入力されたキーを格納する配列
             this.enemies = [];// 敵クラスの配列
-            this.enemyTimer = 0;// 敵の初期時間は0
-            this.enemyInterval = 550;// 敵の出現頻度
+            this.scrollingentityTimer = 0;// 敵の初期時間は0
+            this.scrollingentityInterval = 550;// 敵の出現頻度
             this.ammo = 20;
             this.maxAmmo = 50;
             this.ammoTimer = 0; // 弾薬タイマー
@@ -428,52 +495,57 @@ window.addEventListener('load', function () {
             } else {
                 this.ammoTimer += deltaTime;
             }
-            this.enemies.forEach(enemy => {
-                enemy.update();
+            this.enemies.forEach(scrollingentity => {
+                scrollingentity.update();
 
                 /**
                  * プレイヤーと敵の当たり判定
                  * @param {object} recr1 - プレイヤーのオブジェクト
                  * @param {object} rect2 - 敵のオブジェクト
                  */
-                if (this.hitCheck(this.player, enemy)) {
-                    enemy.markedForDeletion = true;
-                    // タイプがパワーアップの接触の場合、enterPowerUp()を実行
-                    if (enemy.type === 'powers') this.player.enterPowerUp();
-                    else if (enemy.type === 'poweroption') this.player.enterPowerUp();
+                if (this.hitCheck(this.player, scrollingentity)) {
+                    scrollingentity.markedForDeletion = true;
+                    // タイプがパワーの場合、enterPowerUp()を実行
+                    if (scrollingentity.type === 'powers') {
+                        this.player.enterPowerUp();
+                    } else if (scrollingentity.type === 'poweroption') {
+                        this.player.enterPowerUp();
+                    } else if (scrollingentity.type === 'maxshoot') {
+                        this.player.enterPowerUp();
+                    }
                     else this.gameOver = true;
                 }
 
                 // プレイヤーのレーザーと敵HPの当たり判定
                 this.player.projectiles.forEach(projectile => {
-                    if (this.hitCheck(projectile, enemy)) {
-                        enemy.lives--;
+                    if (this.hitCheck(projectile, scrollingentity)) {
+                        scrollingentity.lives--;
                         projectile.markedForDeletion = true;
-                        if (enemy.lives <= 0) {
-                            enemy.markedForDeletion = true;
+                        if (scrollingentity.lives <= 0) {
+                            scrollingentity.markedForDeletion = true;
                             // Boss破壊で、SubBossが8匹出現
-                            if (enemy.type === 'boss') {
+                            if (scrollingentity.type === 'boss') {
                                 // SubBossを同じ座標位置から出現させない
                                 for (let i = 0; i < 8; i++) {
                                     this.enemies.push(new SubBoss(this,
-                                        enemy.x + Math.random() * enemy.width,
-                                        enemy.y + Math.random() * enemy.height + 0.5));
+                                        scrollingentity.x + Math.random() * scrollingentity.width,
+                                        scrollingentity.y + Math.random() * scrollingentity.height + 0.5));
                                 }
                             }
                             // ゲームオーバーになる前に敵を倒して得点を加算する
-                            if (!this.gameOver) this.score += enemy.score;
+                            if (!this.gameOver) this.score += scrollingentity.score;
                         }
                     }
                 })
             });
             // 敵をfilter関数で削除
-            this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion);
-            if (this.enemyTimer > this.enemyInterval && !this.gameOver) {
-                this.addEnemy();
-                this.enemyTimer = 0;
+            this.enemies = this.enemies.filter(scrollingentity => !scrollingentity.markedForDeletion);
+            if (this.scrollingentityTimer > this.scrollingentityInterval && !this.gameOver) {
+                this.addscrollingentity();
+                this.scrollingentityTimer = 0;
             } else {
                 // 敵の出現時間を更新
-                this.enemyTimer += deltaTime;
+                this.scrollingentityTimer += deltaTime;
             }
         }
         /*
@@ -484,8 +556,8 @@ window.addEventListener('load', function () {
         */
         draw(context) {
             this.player.draw(context);
-            this.enemies.forEach(enemy => {
-                enemy.draw(context);
+            this.enemies.forEach(scrollingentity => {
+                scrollingentity.draw(context);
             });
             this.ui.draw(context);
         }
@@ -495,15 +567,19 @@ window.addEventListener('load', function () {
         * 30%の確率でSub2を追加
         * 10%の確率でBossを追加
         * 10%の確率でrockを追加
+        * 10%の確率でPoweroptionを追加
+        * 10%の確率でMaxshootを追加
+        * 10%の確率でPowerUpingを追加
         * 残りの確率でパワーアップアイテムを追加
         */
-        addEnemy() {
+        addscrollingentity() {
             const randomize = Math.random();
             if (randomize < 0.3) this.enemies.push(new Sub1(this));
-            else if (randomize < 0.6) this.enemies.push(new Sub2(this));
-            else if (randomize < 0.7) this.enemies.push(new Boss(this));
-            else if (randomize < 0.8) this.enemies.push(new rock(this));
-            else if (randomize < 0.9) this.enemies.push(new Poweroption(this));
+            else if (randomize < 0.4) this.enemies.push(new Sub2(this));
+            else if (randomize < 0.5) this.enemies.push(new Boss(this));
+            else if (randomize < 0.6) this.enemies.push(new rock(this));
+            else if (randomize < 0.7) this.enemies.push(new Poweroption(this));
+            else if (randomize < 0.8) this.enemies.push(new Maxshoot(this));
             else this.enemies.push(new PowerUping(this));
         }
         // 当たり判定関数
