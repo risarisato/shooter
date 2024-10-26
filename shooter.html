@@ -105,9 +105,10 @@ window.addEventListener('load', function () {
             this.maxSpeed = 7;
             this.projectiles = [];
             this.powerUp = false;
-            //this.powerUpsuper = false;
             this.powerUpTimer = 0;
             this.powerUpLimit = 5000;
+
+            this.powerOption = false;
         }
         /**
          * プレイヤーの位置を更新する
@@ -171,6 +172,7 @@ window.addEventListener('load', function () {
                 this.game.ammo--;
             }
             if (this.powerUp) this.shootPowerup();
+            else if (this.powerOption) this.shootPoweroption();
         }
         /**
          * パワーアップして、3方向「directionY」引数にレーザーを発射する関数
@@ -182,9 +184,16 @@ window.addEventListener('load', function () {
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
             }
         }
+        shootPoweroption() {
+            if (this.game.ammo > 0) {
+                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y -30, this.speed = 17));
+                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
+            }
+        }
         enterPowerUp() {
             this.powerUpTimer = 0; // リセット
             this.powerUp = true;
+            this.powerOption = true;
             if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo; // 弾薬最大
         }
     }
@@ -240,8 +249,6 @@ window.addEventListener('load', function () {
             this.height = 25;
             this.y = Math.random() * (this.game.height * 0.95 - this.height);
             this.lives = 99;
-            //const speeds = [-100.0, -150.0, -200.0, -250.0, -300.0];
-            //this.speed = speeds[Math.floor(Math.random() * speeds.length)];
             this.score = this.lives;
             this.color = '#000000';
         }
@@ -308,6 +315,34 @@ window.addEventListener('load', function () {
             context.fillText('up', this.x - 10 , this.y + 10);
             context.font = '18px Helvatica';
             context.fillStyle = "yellow";
+            context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
+        }
+    }
+    class Poweroption extends ScrollingEntity {
+        constructor(game) {
+            super(game);
+            this.width = 49.5;
+            this.height = 47.5;
+            this.y = Math.random() * (this.game.height * 0.95 - this.height);
+            this.lives = 3;
+            this.score = 50; // 高得点
+            this.type = 'poweroption';
+            this.color = '#92FFFA';
+        }
+        // パワーアップアイテムの描画
+        draw(context) {
+            context.beginPath();
+            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
+            context.fillStyle = this.color;
+            context.fill();
+            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
+            context.font = '13px Arial';
+            context.fillStyle = 'black';
+            context.fillText('Power', this.x - 17 , this.y - 1);
+            context.font = '17px Arial';
+            context.fillText('up', this.x - 10 , this.y + 10);
+            context.font = '18px Helvatica';
+            context.fillStyle = "#92FFFA";
             context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
         }
     }
@@ -405,6 +440,7 @@ window.addEventListener('load', function () {
                     enemy.markedForDeletion = true;
                     // タイプがパワーアップの接触の場合、enterPowerUp()を実行
                     if (enemy.type === 'powers') this.player.enterPowerUp();
+                    else if (enemy.type === 'poweroption') this.player.enterPowerUp();
                     else this.gameOver = true;
                 }
 
@@ -467,6 +503,7 @@ window.addEventListener('load', function () {
             else if (randomize < 0.6) this.enemies.push(new Sub2(this));
             else if (randomize < 0.7) this.enemies.push(new Boss(this));
             else if (randomize < 0.8) this.enemies.push(new rock(this));
+            else if (randomize < 0.9) this.enemies.push(new Poweroption(this));
             else this.enemies.push(new PowerUping(this));
         }
         // 当たり判定関数
