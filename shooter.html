@@ -358,58 +358,12 @@ window.addEventListener('load', function () {
     }
     class Poweroption extends ScrollingEntity {
         constructor(game) {
-            super(game);
-            this.width = 49.5;
-            this.height = 47.5;
-            this.y = Math.random() * (this.game.height * 0.95 - this.height);
-            this.lives = 3;
-            this.score = 50; // 高得点
-            this.type = 'poweroption';
-            this.color = '#49724F';
-        }
-        // パワーアップアイテムの描画
-        draw(context) {
-            context.beginPath();
-            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
-            context.fillStyle = this.color;
-            context.fill();
-            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
-            context.font = '13px Arial';
-            context.fillStyle = 'black';
-            context.fillText('Power', this.x - 17 , this.y - 1);
-            context.font = '17px Arial';
-            context.fillText('up', this.x - 10 , this.y + 10);
-            context.font = '18px Helvatica';
-            context.fillStyle = "#92FFFA";
-            context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
+            super(game, 'poweroption');
         }
     }
     class Maxshoot extends ScrollingEntity {
         constructor(game) {
-            super(game);
-            this.width = 49.5;
-            this.height = 47.5;
-            this.y = Math.random() * (this.game.height * 0.95 - this.height);
-            this.lives = 3;
-            this.score = 50; // 高得点
-            this.type = 'maxshoot';
-            this.color = '#92FFA2';
-        }
-        // パワーアップアイテムの描画
-        draw(context) {
-            context.beginPath();
-            context.arc(this.x, this.y, this.width / 2, 0, 2 * Math.PI, false);
-            context.fillStyle = this.color;
-            context.fill();
-            this.y += Math.sin(this.x * 0.05) * 5; // 上下に揺れる
-            context.font = '13px Arial';
-            context.fillStyle = 'black';
-            context.fillText('Power', this.x - 17 , this.y - 1);
-            context.font = '17px Arial';
-            context.fillText('up', this.x - 10 , this.y + 10);
-            context.font = '18px Helvatica';
-            context.fillStyle = "#92FFFA";
-            context.fillText(`${this.lives}`, this.x - 20, this.y - this.height / 2);
+            super(game, 'maxshoot');
         }
     }
     // ゲームのUIを描画するクラス
@@ -428,7 +382,7 @@ window.addEventListener('load', function () {
             context.shadowColor = 'black';
             context.font = this.fontSize + 'px ' + this.fontFamily;
             context.fillText('点数: ' + this.game.score, 20, 40);
-            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2:HP非表示', 20, 485);
+            context.fillText('【操作】wasd↑←↓→：移動、 space：攻撃、 F2:HP非表示、 F5:リセット', 20, 485);
 
             // ゲーム終了時のメッセージ
             if (this.game.gameOver) {
