@@ -148,7 +148,7 @@ window.addEventListener('load', function () {
             this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion);
 
             // パワーアップ状態のタイマーリセット
-            if (this.powerUp || this.powerOption) {
+            if (this.powerUp || this.powerOption || this.maxshoot) {
                 if (this.powerUpTimer > this.powerUpLimit) {
                     this.powerUpTimer = 0;
                     this.powerUp = false;
@@ -177,13 +177,13 @@ window.addEventListener('load', function () {
             } else if (this.powerOption) {
                 this.shootPoweroption();
             } else if (this.maxshoot) {
-                this.maxshoot();
+                this.shootmaxshoot();
             }
         }
         // 弾薬最大値に達して、どちらかのパワーアップ状態にする
         enterPowerUp() {
             this.powerUpTimer = 0;
-            this.switchPowerUp();
+            this.togglePowerUp();
             if (this.game.ammo < this.game.maxAmmo)this.game.ammo = this.game.maxAmmo;
         }
         /**
@@ -193,14 +193,17 @@ window.addEventListener('load', function () {
          * @param {boolean} maxshoot - パワーアップ状態
          */
 
-        switchPowerUp() {
-            if (!this.powerOption) {
-                this.powerUp = false;
+        togglePowerUp() {
+            if (!this.powerOption && !this.powerUp && !this.maxshoot) {
                 this.powerOption = true;
-            } else if (!this.powerUp) {
-                this.powerUp = true;
+                this.powerUp = false;
+                this.maxshoot = false;
+            } else if (this.powerOption && !this.powerUp && !this.maxshoot) {
                 this.powerOption = false;
-            } else if (this.powerUp) {
+                this.powerUp = true;
+                this.maxshoot = false;
+            } else if (!this.powerOption && this.powerUp && !this.maxshoot) {
+                this.powerOption = false;
                 this.powerUp = false;
                 this.maxshoot = true;
             }
@@ -209,8 +212,12 @@ window.addEventListener('load', function () {
         }
         shootPoweroption() {
             if (this.game.ammo > 0) {
-                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y -30, this.speed = 17));
-                this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
+                if (this.maxshoot) {
+                    this.shootmaxshoot();
+                } else {
+                    this.projectiles.push(new Projectile(this.game, this.x - 10, this.y -30, this.speed = 17));
+                    this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
+                }
             }
         }
         shootPowerup() {
@@ -225,8 +232,6 @@ window.addEventListener('load', function () {
                 this.projectiles.push(new Projectile(this.game, this.x - 10, this.y + 60, this.speed = 17));
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, -3));
                 this.projectiles.push(new Projectile(this.game, this.x + 20, this.y + 15, 9, 3));
-                shootPoweroption();
-                shootPowerup();
             }
         }
     }
@@ -436,7 +441,7 @@ window.addEventListener('load', function () {
                 context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 20);
             }
             // パワーアップ時のフィーバー中の表示
-            if (this.game.player.powerUp || this.game.player.powerOption) context.fillStyle = 'red';
+            if (this.game.player.powerUp || this.game.player.powerOption || this.game.player.maxshoot) context.fillStyle = 'red';
             for (let i = 0; i < this.game.ammo; i++) {
                 context.fillRect(20 + 5 * i, 50, 3, 20);
                 context.fillText('弾数: ', 210, 40);
@@ -444,12 +449,13 @@ window.addEventListener('load', function () {
             }
             // パワーアップの残り時間を計算
             const powerUpTimeLeft = Math.max(0, ((this.game.player.powerUpLimit - this.game.player.powerUpTimer) * 0.001).toFixed(1));
-            if (this.game.player.powerUp || this.game.player.powerOption) {
+            if (this.game.player.powerUp || this.game.player.powerOption || this.game.player.maxshoot) {
                 context.fillText('パワーアップ残り: ' + powerUpTimeLeft, 20, 100);
                 // バグthis.game.player.powerOptionのパワーアップ終わらない
                 if (this.game.player.powerUpTimer > this.game.player.powerUpLimit) {
                     this.game.player.powerUp = false;
                     this.game.player.powerOption = false;
+                    this.game.player.maxshoot = false;
                     this.game.player.powerUpTimer = 0;
                 }
             }
