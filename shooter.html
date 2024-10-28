@@ -323,7 +323,7 @@ window.addEventListener('load', function () {
     /**
      * パワーアップアイテムのクラス
      */
-    class PowerUping extends ScrollingEntity {
+    class PowerUp extends ScrollingEntity {
         constructor(game) {
             super(game);
             this.width = 49.5;
@@ -446,7 +446,7 @@ window.addEventListener('load', function () {
                 scrollingentity.update();
 
                 // プレイヤーがpowersと接触したら、パワーアップ
-                if (this.hitCheck(this.player, scrollingentity)) {
+                if (this.HitCheck(this.player, scrollingentity)) {
                     scrollingentity.markedForDeletion = true;
                     if (scrollingentity.type === 'powers') {
                         this.player.enterPowerUp();
@@ -455,7 +455,7 @@ window.addEventListener('load', function () {
                 }
                 // プレイヤーの弾と敵が接触したら、敵のHPを減らす
                 this.player.projectiles.forEach(projectile => {
-                    if (this.hitCheck(projectile, scrollingentity)) {
+                    if (this.HitCheck(projectile, scrollingentity)) {
                         scrollingentity.lives--;
                         projectile.markedForDeletion = true;
                         if (scrollingentity.lives <= 0) {
@@ -478,7 +478,7 @@ window.addEventListener('load', function () {
 
             // 敵を出現させる
             if (this.scrollingentityTimer > this.scrollingentityInterval && !this.gameOver) {
-                this.addScrollingEntity();
+                this.AddScrollingEntity();
                 this.scrollingentityTimer = 0;
             } else {
                 this.scrollingentityTimer += deltaTime;
@@ -493,13 +493,13 @@ window.addEventListener('load', function () {
             this.ui.draw(context);
         }
         // 敵をランダムの出現率で追加する
-        addScrollingEntity() {
+        AddScrollingEntity() {
             const randomize = Math.random();
             if (randomize < 0.2) this.scrollingentities.push(new Sub1(this));
             else if (randomize < 0.4) this.scrollingentities.push(new Sub2(this));
             else if (randomize < 0.6) this.scrollingentities.push(new Boss(this));
             else if (randomize < 0.8) this.scrollingentities.push(new Rock(this));
-            else this.scrollingentities.push(new PowerUping(this));
+            else this.scrollingentities.push(new PowerUp(this));
         }
         /**
         * 当たり判定
@@ -507,7 +507,7 @@ window.addEventListener('load', function () {
         * @param {object} rect2 - 敵のオブジェクト
         * @returns {boolean} - 当たり判定の結果
         */
-        hitCheck(recr1, rect2) {
+        HitCheck(recr1, rect2) {
             return (
                 recr1.x < rect2.x + rect2.width &&
                 recr1.x + recr1.width > rect2.x &&
