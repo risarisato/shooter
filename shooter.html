@@ -71,9 +71,6 @@ window.addEventListener('load', function () {
     class Projectile {
         /**
          * @param {object} game - ゲームのオブジェクト
-         * @param {number} x - x座標
-         * @param {number} y - y座標
-         * @param {number} speed - 速度
          * @param {number} directionY - y方向の速度
          */
         constructor(game, x, y, speed, directionY = 0) {
@@ -106,13 +103,6 @@ window.addEventListener('load', function () {
     class Player {
         /**
          * @param {Main} game - ゲームのオブジェクト
-         * @param {number} width - 幅
-         * @param {number} height - 高さ
-         * @param {number} x - x座標
-         * @param {number} y - y座標
-         * @param {number} speedY - y方向の速度
-         * @param {number} speedX - x方向の速度
-         * @param {number} maxSpeed - 最大速度
          * @param {array} projectiles - レーザーの配列
          * @param {number} powerUpLevel - パワーアップレベル
          * @param {number} powerUpTimer - パワーアップタイマー
@@ -302,10 +292,9 @@ window.addEventListener('load', function () {
     }
     class SubBoss extends ScrollingEntity {
         /**
-         * @description Bossを倒すとSubBoss座標位置が変化して出現する
-         * @param {object} game - ゲームのオブジェクト
-         * @param {number} x - x座標
-         * @param {number} y - y座標
+         * Bossを倒すとSubBossの出現する
+         * @param {number} x - x座標ランダム
+         * @param {number} y - y座標ランダム
          */
         constructor(game, x, y) {
             super(game);
@@ -398,7 +387,7 @@ window.addEventListener('load', function () {
                     this.game.player.powerUpTimer = 0;
                 }
             }
-            context.restore(); //パワーアップが終われば、restore()で白表示になる
+            context.restore();
         }
     }
     /**
@@ -504,7 +493,7 @@ window.addEventListener('load', function () {
         /**
         * 当たり判定
         * @param {object} recr1 - プレイヤーのオブジェクト
-        * @param {object} rect2 - 敵のオブジェクト
+        * @param {object} rect2 - ScrollingEntityのオブジェクト
         * @returns {boolean} - 当たり判定の結果
         */
         HitCheck(recr1, rect2) {
